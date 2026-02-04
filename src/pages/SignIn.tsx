@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -17,7 +18,11 @@ export default function SignIn() {
       alert("Login Successful!");
       navigate("/account");
     } catch (error) {
-      alert(error.response?.data?.message || "Login Failed");
+      const message = axios.isAxiosError(error)
+        ? ((error.response?.data as { message?: string } | undefined)?.message ??
+            "Login Failed")
+        : "Login Failed";
+      alert(message);
     }
   };
 

@@ -1,11 +1,21 @@
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+type SignUpFormData = {
+  fullName: string;
+  phone: string;
+  email: string;
+  password: string;
+  company: string;
+  isAgency: "yes" | "no";
+};
 
 export default function Signup() {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SignUpFormData>({
     fullName: "",
     phone: "",
     email: "",
@@ -14,11 +24,12 @@ export default function Signup() {
     isAgency: "yes",
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -30,7 +41,11 @@ export default function Signup() {
       alert("Account Created Successfully!");
       navigate("/signin");
     } catch (error) {
-      alert(error.response?.data?.message || "Signup Failed");
+      const message = axios.isAxiosError(error)
+        ? ((error.response?.data as { message?: string } | undefined)?.message ??
+            "Signup Failed")
+        : "Signup Failed";
+      alert(message);
     }
   };
 
